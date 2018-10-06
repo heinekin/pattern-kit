@@ -56,16 +56,44 @@ class PatternModel
 
         $seed_path = get_asset_path($this->pattern, 'data');
 
+
         if ($seed_path) {
             $seed_file = file_get_contents(
               'file://'.realpath($seed_path)
             );
+
             if (($pathinfo = pathinfo(
                 $seed_path
               )) && isset($pathinfo['extension']) && $pathinfo['extension'] == 'yaml') {
                 $this->seed_data = Yaml::parse($seed_file);
             } elseif (!empty($seed_file)) {
                 $this->seed_data = json_decode($seed_file, true);
+
+                if (!$this->seed_data ) {
+                    switch (json_last_error()) {
+                        case JSON_ERROR_NONE:
+                            echo ' - No errors';
+                        break;
+                        case JSON_ERROR_DEPTH:
+                            echo ' - Maximum stack depth exceeded';
+                        break;
+                        case JSON_ERROR_STATE_MISMATCH:
+                            echo ' - Underflow or the modes mismatch';
+                        break;
+                        case JSON_ERROR_CTRL_CHAR:
+                            echo ' - Unexpected control character found';
+                        break;
+                        case JSON_ERROR_SYNTAX:
+                            echo ' - Syntax error, malformed JSON';
+                        break;
+                        case JSON_ERROR_UTF8:
+                            echo ' - Malformed UTF-8 characters, possibly incorrectly encoded';
+                        break;
+                        default:
+                            echo ' - Unknown error';
+                        break;
+                    }
+                }
             } else {
                 $this->seed_data = array();
             }
@@ -109,6 +137,10 @@ class PatternModel
         }
 
         $asset_path = get_asset_path($this->pattern, 'assets');
+        if (empty($asset_path)) {
+            return '';
+        }
+
         $asset_file = file_get_contents('file://'.realpath($asset_path));
 
         $this->asset_data = YAML::parse($asset_file, false);

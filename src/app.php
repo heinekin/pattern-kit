@@ -95,7 +95,7 @@ function data_replace(&$data)
         foreach ($data as &$value) {
             if (is_array($value)) {
                 data_replace($value);
-            } elseif (is_string($value) && $value[0] == '@') {
+            } elseif (is_string($value) && !empty($value) && $value[0] == '@') {
                 $patternObj = new \PatternKit\Model\PatternModel($value);
                 $file_path = 'file://' . realpath(
                   $patternObj->get_asset_path($value, 'data')
@@ -177,6 +177,10 @@ function get_asset_path($name, $type)
         case 'assets':
             // Default the path to empty.
             $path = '';
+
+            if (empty($app['config']['paths'][$type])) {
+                return $path;
+            }
 
             $asset_path = $app['config']['paths'][$type][0];
             // Fetch the path from the global configuration.
